@@ -9,5 +9,4 @@ class PassengerTrain < Train
     TRAIN_TYPE
   end
 
-
 end

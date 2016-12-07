@@ -2,37 +2,23 @@ class Station
   attr_accessor :name
   attr_reader :trains
  
+  @@stations_list = []
+
   def initialize(name)
     @name = name
     @trains = []
   end
 
   def arrive(train)
-    false
-    if !( (train.instance_of? PassengerTrain) || (train.instance_of? CargoTrain) )
-      puts "Wrong argument type"
-    elsif self.trains.include?(train)
-      puts "Already at the station '#{self.name}', wrong info"
-    elsif train.route.nil?
-      puts "No route for '#{train.number}', wrong info"
-    elsif !train.route.list.include?(self)
-      puts "Station '#{self.name}' not listed in route for '#{train.number}', wrong info"
-    else
+    if ready_for_arrive?(train)
       self.trains << train
       train.current_station_index = train.route.list.index(self)
-      true
     end
   end
 
   def depart(train)
-    false
-    if !( (train.instance_of? PassengerTrain) || (train.instance_of? CargoTrain) )
-      puts "Wrong argument type"
-    elsif self.trains.include?(train)
+    if ready_for_depart?(train)
       self.trains.delete(train)
-      true
-    else
-      puts "Already departed from the station '#{self.name}', wrong info"
     end
   end
 
@@ -49,16 +35,52 @@ class Station
   end
 
   def list_trains_by_type(train_type)
-    if !train.instance_of? String
+    if !train_type.instance_of? String
       puts "Wrong argument type"
+    elsif self.trains.size = 0
+      puts "No any train at the station '#{self.name}'" 
     else
-      if self.trains.size > 0
-        puts "#{train.number} type: #{train.type}" 
-        self.trains.each { |train| puts "#{train.number}" if train.type == train_type }
-      else
-        puts "No any train at the station '#{self.name}'" 
-      end
+      puts "#{train.number} type: #{train.type}" 
+      self.trains.each { |train| puts "#{train.number}" if train.type == train_type }
     end
+  end
+
+  def self.enlist_station(station)
+    @@stations_list[@@stations_list.size] = station
+  end
+
+  def self.list_stations()
+    @@stations_list
+  end
+
+  private
+  
+  def ready_for_arrive?
+    ready_for_arrive = false
+    if !( (train.instance_of? PassengerTrain) || (train.instance_of? CargoTrain) )
+      puts "Wrong argument type"
+    elsif self.trains.include?(train)
+      puts "Already at the station '#{self.name}', wrong info"
+    elsif train.route.nil?
+      puts "No route for the train '#{train.number}', wrong info"
+    elsif !train.route.list.include?(self)
+      puts "Station '#{self.name}' not listed in route for '#{train.number}', wrong info"
+    else
+      ready_for_arrive = false
+    end
+    ready_for_arrive
+  end
+
+  def ready_for_depart?
+    ready_for_depart = false
+    if !( (train.instance_of? PassengerTrain) || (train.instance_of? CargoTrain) )
+      puts "Wrong argument type"
+    elsif !self.trains.include?(train)
+      puts "Already departed from the station '#{self.name}', wrong info"
+    else
+      ready_for_depart = true
+    end
+    ready_for_depart
   end
 
 end
