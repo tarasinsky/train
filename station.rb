@@ -46,11 +46,16 @@ class Station
   end
 
   def self.enlist_station(station)
-    @@stations_list[@@stations_list.size] = station
+    @@stations_list << station
   end
 
-  def self.list_stations()
+  def self.list_stations
     @@stations_list
+  end
+
+  def self.all
+    puts "There are stations:"
+    @@stations_list.each { |station| puts "'#{station.name}'" }
   end
 
   private

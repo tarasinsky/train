@@ -9,11 +9,13 @@ class Train
   attr_accessor :current_station_index
   attr_accessor :route
 
+  include Manufacturer
+
   @@trains_list = []
 
   def initialize(number, type)
-    if !(number.instance_of? Fixnum)
-      puts "Wrong type for number. Set to 0"
+    if !(number.instance_of? String)
+      puts "Wrong type for number. Set to 'Без номера'"
       @number = 0
     else
       @number = number
@@ -95,11 +97,22 @@ class Train
   end
 
   def self.enlist_train(train)
-    @@trains_list[@@trains_list.size] = train
+    @@trains_list << train
   end
 
-  def self.list_trains()
+  def self.list_trains
     @@trains_list
+  end
+
+  def self.find(train_number)
+    found_train = nil
+    @@trains_list.each do |train| 
+      if train.number == train_number
+        found_train = train
+        break
+      end
+    end
+    found_train
   end
 
   # forward: true - вперед, false - назад

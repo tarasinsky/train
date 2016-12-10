@@ -1,3 +1,6 @@
+require_relative 'manufacturer'
+require_relative 'instance_counter'
+
 require_relative 'dispatcher'
 require_relative 'train'
 require_relative 'passenger_train'

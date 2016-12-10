@@ -2,6 +2,8 @@ class Carriage
   attr_reader :number
   attr_reader :type
 
+  include Manufacturer
+
   @@carriages_list = []
 
   def initialize(number, type)
@@ -10,10 +12,10 @@ class Carriage
   end
 
   def self.enlist_carriage(carriage)
-    @@carriages_list[@@carriages_list.size] = carriage
+    @@carriages_list << carriage
   end
 
-  def self.list_carriages()
+  def self.list_carriages
     @@carriages_list
   end
 

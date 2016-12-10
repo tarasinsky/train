@@ -3,9 +3,9 @@ class Route
 
   def initialize(start_station, finish_station=nil)
     @list = []
-    if !start_station.instance_of? Station
+    if !(start_station.instance_of? Station)
       puts "Wrong type for 1 argument. Created empty route"
-    elsif !start_station.instance_of? Station
+    elsif !(start_station.instance_of? Station)
       puts "Wrong type for 2 argument. Created empty route"
     else
       @list << start_station << finish_station
