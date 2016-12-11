@@ -33,6 +33,8 @@ class Train
     @current_station_index = nil
     @carriages = []
 
+    @@trains_list << self
+
   end
 
   def move(speed)
@@ -60,10 +62,7 @@ class Train
   end
 
   def assign_route(route)
-    if exist_train_route?
-      self.route = route
-      self.route.list[0].arrive(self)
-    end
+    self.route = route
   end
 
   def set_initial_station
@@ -96,23 +95,13 @@ class Train
     end
   end
 
-  def self.enlist_train(train)
-    @@trains_list << train
-  end
-
-  def self.list_trains
+  def self.all
     @@trains_list
   end
 
   def self.find(train_number)
-    found_train = nil
-    @@trains_list.each do |train| 
-      if train.number == train_number
-        found_train = train
-        break
-      end
-    end
-    found_train
+    hash_for_search = Hash[@@trains_list.collect { |train| [train.number, train] }]
+    hash_for_search[train_number]
   end
 
   # forward: true - вперед, false - назад
@@ -159,18 +148,6 @@ class Train
   def depart_from_station
     current_station = self.route.list[self.current_station_index]
     current_station.depart(self)
-  end
-
-  def exist_train_route?
-    exist_train_route = false
-    if !self.route
-      puts "No route for the train '#{self.number}'"
-    elsif self.route.list.size == 0 
-      puts "The route is empty for the train '#{self.number}'"
-    else
-      exist_train_route = true
-    end
-    exist_train_route
   end
 
   def carriage_ready?(carriage)

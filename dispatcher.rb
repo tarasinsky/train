@@ -44,17 +44,17 @@ class Dispatcher
     print "Выберите вариант: "
   end
 
-  def create_station()
+  def create_station
     print "Укажите название станции: "
     station_name = gets.chomp
     if station_name.size > 0
-      Station.enlist_station(Station.new(station_name))
+      Station.new(station_name)
     else
       puts "Не указано название станции"
     end
   end
 
-  def create_train()
+  def create_train
 
     train_number = input_train_number
 
@@ -66,9 +66,9 @@ class Dispatcher
       puts "Любой другой ответ - отмена действия"
       print "Тип поезда: "; train_type = gets.to_i
       if train_type == 1 
-        Train.enlist_train(PassengerTrain.new(train_number))
+        PassengerTrain.new(train_number)
       elsif train_type == 2
-        Train.enlist_train(CargoTrain.new(train_number))
+        CargoTrain.new(train_number)
       else
         puts "Не указан тип поезда"
       end
@@ -76,61 +76,61 @@ class Dispatcher
 
   end
 
-  def arrive_train_to_station()
+  def arrive_train_to_station
 
-    if Train.list_trains.size == 0
+    if Train.all.size == 0
       puts "Список поездов пуст"
-    elsif Station.list_stations.size == 0
+    elsif Station.all.size == 0
       puts "Список станций пуст"
     else
       puts "Какой поезд нужно поместить на станцию?"
 
-      found_train_index = get_train_by_number(Train.list_trains)
+      found_train_index = get_train_by_number(Train.all)
 
       if found_train_index > -1
 
-        print_stations_list(Station.list_stations)
+        print_stations_list(Station.all)
 
         print "Номер поезда: "; desired_station = gets.to_i
-        if desired_station > 0 || desired_station <= Station.list_stations.size
-          if Train.list_trains[found_train_index].route.nil?
-            new_route = Route.new(Station.list_stations[desired_station-1])
-            Train.list_trains[found_train_index].assign_route(new_route)
-            Train.list_trains[found_train_index].set_initial_station()
+        if desired_station > 0 || desired_station <= Station.all.size
+          if Train.all[found_train_index].route.nil?
+            new_route = Route.new(Station.all[desired_station-1])
+            Train.all[found_train_index].assign_route(new_route)
+            Train.all[found_train_index].set_initial_station()
           end
-          Station.list_stations[desired_station-1].arrive(Train.list_trains[found_train_index])
+          Station.all[desired_station-1].arrive(Train.all[found_train_index])
         end
 
       else
-        puts "Нет поезда с номером '#{train_number}'"
+        puts "Нет такого поезда"
       end
 
     end
   end
 
-  def show_stations_and_trains()
-    if Station.list_stations.size == 0
+  def show_stations_and_trains
+    if Station.all.size == 0
       puts "Список станций пуст"
     else
-      print_stations_list(Station.list_stations)
+      print_stations_list(Station.all)
       print "Номер станции: "; station_number = gets.to_i
       if station_number.size > 0
-        Station.list_stations[station_number-1].list_trains
+        Station.all[station_number-1].list_trains
       else
         puts "Неверный номер станции"
       end
     end
   end
 
-  def hitch_carriage_to_train()
+  def hitch_carriage_to_train
 
     puts "К какому поезду прицепить вагон?"
 
-    train_number_index = get_train_by_number(Train.list_trains)
+    train_number_index = get_train_by_number(Train.all)
 
     if train_number_index > -1
       
-      current_train_type = Train.list_trains[train_number_index].type
+      current_train_type = Train.all[train_number_index].type
 
       print "Укажите номер вагона (тип #{current_train_type}): "
       carriage_number = gets.to_i
@@ -138,14 +138,14 @@ class Dispatcher
       if carriage_number.size > 0 
         created_carriage = false
         if current_train_type == "Passenger"
-          Carriage.enlist_carriage(PassengerCarriage.new(carriage_number))
+          PassengerCarriage.new(carriage_number)
           created_carriage = true
         elsif current_train_type == "Cargo"
-          Carriage.enlist_carriage(CargoCarriage.new(carriage_number))
+          CargoCarriage.new(carriage_number)
           created_carriage = true
         end
         if created_carriage
-          Train.list_trains[train_number_index].hitch_carriage(Carriage.list_carriages[Carriage.list_carriages.size-1])
+          Train.all[train_number_index].hitch_carriage(Carriage.all[Carriage.all.size-1])
         end
       else
         puts "Неверный номер вагона"
@@ -157,21 +157,21 @@ class Dispatcher
 
   end
 
-  def unhitch_carriage_from_train()
+  def unhitch_carriage_from_train
     
     puts "От какого поезда отцепить вагон?"
-    train_number_index  = get_train_by_number(Train.list_trains)
+    train_number_index  = get_train_by_number(Train.all)
 
     if train_number_index > -1
-      if Train.list_trains[train_number_index].carriages.size > 0 
+      if Train.all[train_number_index].carriages.size > 0 
 
         puts "Укажите номер вагона"
-        Train.list_trains[train_number_index].carriages.each { |carriage| puts "#{carriage.number}" }
+        Train.all[train_number_index].carriages.each { |carriage| puts "#{carriage.number}" }
 
         print "Номер вагона: "; carriage_number = gets.to_i
 
-        Train.list_trains[train_number_index].carriages.each do |carriage|
-          Train.list_trains[train_number_index].hitch_carriage(carriage) if carriage.number == carriage_number
+        Train.all[train_number_index].carriages.each do |carriage|
+          Train.all[train_number_index].hitch_carriage(carriage) if carriage.number == carriage_number
         end
 
       else
@@ -194,13 +194,13 @@ class Dispatcher
 
   def input_train_number
     print "Укажите номер поезда: "
-    gets.chomp.to_i
+    gets.chomp
   end
 
   def get_train_by_number(trains_list)
     found_train_index = -1
     trains_list.each { |train| puts "#{train.number}" }
-    print "Номер поезда: "; train_number = gets.to_i
+    print "Номер поезда: "; train_number = gets.chomp
     if train_number.size > 0 
 
       found_train_index = -1

@@ -9,13 +9,11 @@ class Carriage
   def initialize(number, type)
     @number = number
     @type   = type
+
+    @@carriages_list << self
   end
 
-  def self.enlist_carriage(carriage)
-    @@carriages_list << carriage
-  end
-
-  def self.list_carriages
+  def self.all
     @@carriages_list
   end
 

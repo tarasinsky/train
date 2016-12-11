@@ -2,7 +2,6 @@ require_relative 'instance_counter'
 
 class Test
 
-  @@instance_counter = 0
   include InstanceCounter
 
   def initialize
