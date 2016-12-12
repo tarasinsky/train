@@ -2,24 +2,26 @@ class Station
   attr_accessor :name
   attr_reader :trains
  
+  include InstanceCounter
+
   @@stations_list = []
 
   def initialize(name)
     @name = name
-    @trains = []
+    @trains = {}
 
     @@stations_list << self
   end
 
   def arrive(train)
     if ready_for_arrive?(train)
-      self.trains << train
+      self.trains[train.number] = train
     end
   end
 
   def depart(train)
     if ready_for_depart?(train)
-      self.trains.delete(train)
+      self.trains.delete(train.number)
     end
   end
 
@@ -27,11 +29,9 @@ class Station
     count_trains = self.trains.size
     if count_trains == 0
       puts "No any train at the station '#{self.name}'" 
-    elsif count_trains == 1
-      puts "There is only train '#{@trains[0].number}' at the station '#{self.name}'"
     else
       puts "There are trains at the station '#{self.name}':"
-      self.trains.each { |train| puts "#{train.number}" }
+      self.trains.each { |train_number, train| puts "#{train_number}" }
     end
   end
 
@@ -41,8 +41,8 @@ class Station
     elsif self.trains.size = 0
       puts "No any train at the station '#{self.name}'" 
     else
-      puts "#{train.number} type: #{train.type}" 
-      self.trains.each { |train| puts "#{train.number}" if train.type == train_type }
+      puts "Trains list of type: #{train.type}" 
+      self.trains.each { |train_number, train| puts "#{train_number}" if train.type == train_type }
     end
   end
 
@@ -56,7 +56,7 @@ class Station
     ready_for_arrive = false
     if !( (train.instance_of? PassengerTrain) || (train.instance_of? CargoTrain) )
       puts "Wrong argument type"
-    elsif self.trains.include?(train)
+    elsif self.trains.has_value?(train)
       puts "Already at the station '#{self.name}', wrong info"
     elsif train.route.nil?
       puts "No route for the train '#{train.number}', wrong info"
@@ -72,7 +72,7 @@ class Station
     ready_for_depart = false
     if !( (train.instance_of? PassengerTrain) || (train.instance_of? CargoTrain) )
       puts "Wrong argument type"
-    elsif !self.trains.include?(train)
+    elsif !self.trains.has_value?(train)
       puts "Already departed from the station '#{self.name}', wrong info"
     else
       ready_for_depart = true

@@ -2,6 +2,7 @@ class Carriage
   attr_reader :number
   attr_reader :type
 
+  include InstanceCounter
   include Manufacturer
 
   @@carriages_list = []

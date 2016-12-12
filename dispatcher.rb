@@ -85,20 +85,20 @@ class Dispatcher
     else
       puts "Какой поезд нужно поместить на станцию?"
 
-      found_train_index = get_train_by_number(Train.all)
+      arriving_train = get_train_by_number(Train.all)
 
-      if found_train_index > -1
+      if !arriving_train.nil?
 
         print_stations_list(Station.all)
 
         print "Номер поезда: "; desired_station = gets.to_i
         if desired_station > 0 || desired_station <= Station.all.size
-          if Train.all[found_train_index].route.nil?
+          if arriving_train.route.nil?
             new_route = Route.new(Station.all[desired_station-1])
-            Train.all[found_train_index].assign_route(new_route)
-            Train.all[found_train_index].set_initial_station()
+            arriving_train.assign_route(new_route)
+            arriving_train.set_initial_station()
           end
-          Station.all[desired_station-1].arrive(Train.all[found_train_index])
+          Station.all[desired_station-1].arrive(arriving_train)
         end
 
       else
@@ -126,26 +126,24 @@ class Dispatcher
 
     puts "К какому поезду прицепить вагон?"
 
-    train_number_index = get_train_by_number(Train.all)
+    loco = get_train_by_number(Train.all)
 
-    if train_number_index > -1
+    if !loco.nil?
       
-      current_train_type = Train.all[train_number_index].type
+      current_train_type = loco.type
 
       print "Укажите номер вагона (тип #{current_train_type}): "
       carriage_number = gets.to_i
       
       if carriage_number.size > 0 
-        created_carriage = false
+        new_carriage = nil
         if current_train_type == "Passenger"
-          PassengerCarriage.new(carriage_number)
-          created_carriage = true
+          new_carriage = PassengerCarriage.new(carriage_number)
         elsif current_train_type == "Cargo"
-          CargoCarriage.new(carriage_number)
-          created_carriage = true
+          new_carriage = CargoCarriage.new(carriage_number)
         end
-        if created_carriage
-          Train.all[train_number_index].hitch_carriage(Carriage.all[Carriage.all.size-1])
+        if !new_carriage.nil?
+          loco.hitch_carriage(new_carriage)
         end
       else
         puts "Неверный номер вагона"
@@ -160,18 +158,18 @@ class Dispatcher
   def unhitch_carriage_from_train
     
     puts "От какого поезда отцепить вагон?"
-    train_number_index  = get_train_by_number(Train.all)
+    loco = get_train_by_number(Train.all)
 
-    if train_number_index > -1
-      if Train.all[train_number_index].carriages.size > 0 
+    if !loco.nil?
+      if loco.carriages.size > 0 
 
         puts "Укажите номер вагона"
-        Train.all[train_number_index].carriages.each { |carriage| puts "#{carriage.number}" }
+        loco.carriages.each { |carriage| puts "#{carriage.number}" }
 
         print "Номер вагона: "; carriage_number = gets.to_i
 
-        Train.all[train_number_index].carriages.each do |carriage|
-          Train.all[train_number_index].hitch_carriage(carriage) if carriage.number == carriage_number
+        loco.carriages.each do |carriage|
+          loco.hitch_carriage(carriage) if carriage.number == carriage_number; break
         end
 
       else
@@ -189,7 +187,7 @@ class Dispatcher
 
   def print_trains_list(trains_list)
     puts "Список поездов:"
-    trains_list.each { |train| puts "#{train.number}" }
+    trains_list.each { |train_number, train| puts "#{train_number}" }
   end
 
   def input_train_number
@@ -198,20 +196,9 @@ class Dispatcher
   end
 
   def get_train_by_number(trains_list)
-    found_train_index = -1
-    trains_list.each { |train| puts "#{train.number}" }
+    trains_list.each { |train_number, train| puts "#{train_number}" }
     print "Номер поезда: "; train_number = gets.chomp
-    if train_number.size > 0 
-
-      found_train_index = -1
-      trains_list.each_with_index do |train, index|
-        if train.number == train_number
-          found_train_index = index
-          break
-        end
-      end
-    end
-    found_train_index
+    trains_list[train_number]
   end
 
 end

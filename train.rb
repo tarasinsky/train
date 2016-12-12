@@ -10,8 +10,9 @@ class Train
   attr_accessor :route
 
   include Manufacturer
+  include InstanceCounter
 
-  @@trains_list = []
+  @@trains_list = {}
 
   def initialize(number, type)
     if !(number.instance_of? String)
@@ -33,7 +34,7 @@ class Train
     @current_station_index = nil
     @carriages = []
 
-    @@trains_list << self
+    @@trains_list[number] = self
 
   end
 
@@ -100,8 +101,7 @@ class Train
   end
 
   def self.find(train_number)
-    hash_for_search = Hash[@@trains_list.collect { |train| [train.number, train] }]
-    hash_for_search[train_number]
+    @@trains_list[train_number]
   end
 
   # forward: true - вперед, false - назад
