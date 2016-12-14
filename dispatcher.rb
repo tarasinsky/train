@@ -203,7 +203,7 @@ class Dispatcher
 
     if train.route.list.size == 1 
       puts "Couldn't move train '#{train.number}' because of only 1 station in the route"
-    elseif forward && train.current_station_index == (train.route.list.size - 1)
+    elsif forward && train.current_station_index == (train.route.list.size - 1)
       puts "Already at the final station. Set a new route for the train '#{train.number}'"
     elsif !forward && train.current_station_index == 0
       puts "Already at the start station. Set a new route for the train '#{train.number}'"
