@@ -45,12 +45,16 @@ class Dispatcher
   end
 
   def create_station
-    print "Укажите название станции: "
-    station_name = gets.chomp
-    if station_name.size > 0
+    begin
+      print "Укажите название станции: "
+      station_name = gets.chomp
       Station.new(station_name)
-    else
-      puts "Не указано название станции"
+    rescue RuntimeError => e
+      print "Ошибка создания станции '#{e.message}'. Повторить (y-да/любой другой символ - нет)?"
+      retry_again = gets.chomp
+      retry if retry_again == 'y'
+    rescue => e
+      puts "Неожиданная ошибка: #{e.to_s}"
     end
   end
 

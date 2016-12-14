@@ -6,7 +6,7 @@ class Station
 
   @@stations_list = []
 
-  NAME_FORMAT = /^[а-я]{1}$/
+  NAME_FORMAT = /^[а-я]{1}/
 
   def initialize(name)
     @name = name
