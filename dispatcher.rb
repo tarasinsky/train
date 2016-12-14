@@ -56,21 +56,30 @@ class Dispatcher
 
   def create_train
 
-    train_number = input_train_number
+    24.times { print "-" }; puts '-'
+    puts "Выберите тип поезда"
+    puts "1. Пассажирский"
+    puts "2. Грузовой"
+    puts "Любой другой ответ - отмена действия"
+    print "Тип поезда: "; train_type = gets.to_i
 
-    if train_number.size > 0
-      24.times { print "-" }; puts '-'
-      puts "Выберите тип поезда"
-      puts "1. Пассажирский"
-      puts "2. Грузовой"
-      puts "Любой другой ответ - отмена действия"
-      print "Тип поезда: "; train_type = gets.to_i
-      if train_type == 1 
-        PassengerTrain.new(train_number)
-      elsif train_type == 2
-        CargoTrain.new(train_number)
-      else
-        puts "Не указан тип поезда"
+    if !(1..2).include?(train_type)
+      puts "Не указан тип поезда"
+      system 'clear'
+    else
+      begin
+        train_number = input_train_number
+        if train_type == 1 
+          PassengerTrain.new(train_number)
+        elsif train_type == 2
+          CargoTrain.new(train_number)
+        end
+      rescue RuntimeError => e
+        print "Ошибка создания поезда '#{e.message}'. Повторить (y-да/любой другой символ - нет)?"
+        retry_again = gets.chomp
+        retry if retry_again == 'y'
+      rescue => e
+        puts "Неожиданная ошибка: #{e.to_s}"
       end
     end
 
@@ -132,21 +141,24 @@ class Dispatcher
       
       current_train_type = loco.type
 
-      print "Укажите номер вагона (тип #{current_train_type}): "
-      carriage_number = gets.to_i
+      begin
+        print "Укажите номер вагона (тип #{current_train_type}): "
+        carriage_number = gets.to_i
       
-      if carriage_number.size > 0 
         new_carriage = nil
         if current_train_type == "Passenger"
           new_carriage = PassengerCarriage.new(carriage_number)
         elsif current_train_type == "Cargo"
           new_carriage = CargoCarriage.new(carriage_number)
         end
-        if !new_carriage.nil?
-          loco.hitch_carriage(new_carriage)
-        end
-      else
-        puts "Неверный номер вагона"
+        
+        loco.hitch_carriage(new_carriage) if !new_carriage.nil?
+      rescue RuntimeError => e
+        print "Ошибка создания вагона '#{e.message}'. Повторить (y-да/любой другой символ - нет)?"
+        retry_again = gets.chomp
+        retry if retry_again == 'y'
+      rescue => e
+        puts "Неожиданная ошибка: #{e.to_s}"
       end
 
     else
@@ -177,6 +189,22 @@ class Dispatcher
       end
     else
       puts "Неверный номер поезда"
+    end
+  end
+
+  def run_train
+    puts "Какой поезд отправить по маршруту?"
+    train = get_train_by_number(Train.all)
+    forward = true
+
+    if train.route.list.size == 1 
+      puts "Couldn't move train '#{train.number}' because of only 1 station in the route"
+    elseif forward && train.current_station_index == (train.route.list.size - 1)
+      puts "Already at the final station. Set a new route for the train '#{train.number}'"
+    elsif !forward && train.current_station_index == 0
+      puts "Already at the start station. Set a new route for the train '#{train.number}'"
+    else
+      train.move_by_route(forward)
     end
   end
 

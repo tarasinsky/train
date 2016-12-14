@@ -6,11 +6,13 @@ class Station
 
   @@stations_list = []
 
+  NAME_FORMAT = /^[а-я]{1}$/
+
   def initialize(name)
     @name = name
     @trains = {}
 
-    @@stations_list << self
+    @@stations_list << self if validate!
   end
 
   def arrive(train)
@@ -50,6 +52,12 @@ class Station
     @@stations_list
   end
 
+  def valid?
+    validate!
+  rescue
+    false
+  end
+
   private
   
   def ready_for_arrive?(train)
@@ -80,4 +88,10 @@ class Station
     ready_for_depart
   end
 
+  def validate!
+    raise "Не указано название станции" if self.name.nil?
+    raise "Длина названия станции должна быть не менее 1 символа" if self.name.size < 1
+    raise "Неверный формат названия станции" if self.name !~ NAME_FORMAT
+    true
+  end
 end

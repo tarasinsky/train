@@ -1,7 +1,6 @@
 class Train
 
-# должны быть доступны только из подклассов
-  #protected 
+  TRAIN_NUMBER_FORMAT = /^[а-я\d]{3}-?[а-я\d]{2}$/
 
   attr_reader   :number
   attr_accessor :speed
@@ -15,26 +14,16 @@ class Train
   @@trains_list = {}
 
   def initialize(number, type)
-    if !(number.instance_of? String)
-      puts "Wrong type for number. Set to 'Без номера'"
-      @number = 0
-    else
-      @number = number
-    end
-
-    if !(type.instance_of? String)
-      puts "Wrong type for train type. Set to PassengerTrain"
-      @type = 'PassengerTrain'
-    else
-      @type = type
-    end
     
+    @number = number
+    @type = type
+
     @speed = 0
     @route = nil
     @current_station_index = nil
     @carriages = []
 
-    @@trains_list[number] = self
+    @@trains_list[number] = self if validate!
 
   end
 
@@ -54,11 +43,7 @@ class Train
 
   def unhitch_carriage(carriage)
     if carriage_ready?(carriage)
-      if self.carriages.size == 0 
-        puts "Impossible because of no any carriage hitched"
-      else
-        self.carriages.delete(carriage)
-      end
+      self.carriages.delete(carriage)
     end
   end
 
@@ -106,32 +91,29 @@ class Train
 
   # forward: true - вперед, false - назад
   def move_by_route(forward=true)
+    
     if exist_train_route?
 
-      if self.route.list.size == 1 
-        puts "Couldn't move train '#{self.number}' because of only 1 station in the route"
-      else
-        if forward && self.current_station_index == (self.route.list.size - 1)
-          puts "Already at the final station. Set a new route for the train '#{self.number}'"
-        elsif !forward && self.current_station_index == 0
-          puts "Already at the start station. Set a new route for the train '#{self.number}'"
-        else
+      depart_from_station()
 
-          depart_from_station()
+      train_start_speed_kmh   = 5
+      train_regular_speed_kmh = 60
 
-          train_start_speed_kmh   = 5
-          train_regular_speed_kmh = 60
+      move (train_start_speed_kmh  )
+      move (train_regular_speed_kmh)
+      move (train_start_speed_kmh  )
 
-          move (train_start_speed_kmh  )
-          move (train_regular_speed_kmh)
-          move (train_start_speed_kmh  )
-
-          arrive_to_station(forward)
-          brake
+      arrive_to_station(forward)
+      brake
           
-        end
-      end
     end
+
+  end
+
+  def valid?
+    validate!
+  rescue
+    false
   end
 
   protected
@@ -153,13 +135,23 @@ class Train
   def carriage_ready?(carriage)
     carriage_ready = false
     if self.speed > 0
-      puts "Impossible to hitch because of speed #{self.speed}"
+      raise "Невозможно выполнить операцию с вагоном во время движения поезда. #{self.speed}"
     elsif carriage.type != self.type
-      puts "Wrong carriage type"
+      raise "Неверный тип вагона"
     else
       carriage_ready = true
     end
     carriage_ready
+  end
+
+  def validate!
+    raise "Неверный тип номера поезда"    if !(self.number.instance_of? String)
+    raise "Неверный тип типа поезда"      if !(self.type.instance_of? String  )
+
+    raise "Не указан номер поезда"        if self.number.nil?
+    raise "Длина номера поезда должна быть не менее 5 символов" if self.number.size < 5
+    raise "Неверный формат номера поезда #{TRAIN_NUMBER_FORMAT}" if self.number !~ TRAIN_NUMBER_FORMAT
+    true
   end
 
 end
