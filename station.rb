@@ -6,7 +6,7 @@ class Station
 
   @@stations_list = []
 
-  NAME_FORMAT = /^[а-я]{1}/
+  NAME_FORMAT = /^[а-я]{1}/i
 
   def initialize(name)
     @name = name
@@ -58,6 +58,11 @@ class Station
     false
   end
 
+  def check_trains(&block)
+    #self.trains.each { |train_number, train| block.call(train_number, train.type, train.count_carriages) }
+    self.trains.each { |train_number, train| block.call(train) }
+  end
+
   private
   
   def ready_for_arrive?(train)
@@ -91,7 +96,7 @@ class Station
   def validate!
     raise "Не указано название станции" if self.name.nil?
     raise "Длина названия станции должна быть не менее 1 символа" if self.name.size < 1
-    raise "Неверный формат названия станции" if self.name !~ NAME_FORMAT
+    raise "Неверный формат названия станции #{NAME_FORMAT}" if self.name !~ NAME_FORMAT
     true
   end
 end

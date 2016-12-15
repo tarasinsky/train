@@ -24,6 +24,10 @@ class Dispatcher
         arrive_train_to_station
       when 6
         show_stations_and_trains
+      when 7
+        show_trains_and_carriages
+      when 8
+        occupy_carriage
       end
 
     end  
@@ -40,6 +44,8 @@ class Dispatcher
     puts "4. Отцепить вагон от поезда"
     puts "5. Поместить поезд на станцию"
     puts "6. Просмотреть список станций и поездов"
+    puts "7. Просмотреть список поездов и вагонов"
+    puts "8. Заполнить вагон"
     puts "0. Выход"
     print "Выберите вариант: "
   end
@@ -128,7 +134,35 @@ class Dispatcher
       print_stations_list(Station.all)
       print "Номер станции: "; station_number = gets.to_i
       if station_number.size > 0
-        Station.all[station_number-1].list_trains
+        #Station.all[station_number-1].list_trains
+        # Номер поезда, тип, кол-во вагонов
+        block = lambda { |train | puts "Поезд № #{train.number}, тип #{train.type}, кол-во вагонов #{train.count_carriages}"}
+        Station.all[station_number-1].check_trains(&block)
+      else
+        puts "Неверный номер станции"
+      end
+    end
+  end
+
+  def show_trains_and_carriages
+    if Train.all.size == 0
+      puts "Список поездов пуст"
+    else
+      puts "Выберите интересуемый поезд"
+      loco = get_train_by_number(Train.all)
+      if !loco.nil?
+        if loco.carriages.size > 0
+          current_train_type = loco.type
+          # Номер вагона, тип, кол-во свободно и занято
+          if current_train_type == "Passenger"
+            block = lambda { |carriage | puts "Вагон № #{carriage.number}, тип #{carriage.type}, мест занято #{carriage.count_occupied_seats}, мест свободно #{carriage.count_free_seats}" }
+          elsif current_train_type == "Cargo"
+            block = lambda { |carriage | puts "Вагон № #{carriage.number}, тип #{carriage.type}, занятый объем #{carriage.count_occupied_volume}, свободный объем #{carriage.count_free_volume}" }
+          end
+          loco.check_carriages(&block)
+        else
+          puts "К поезду #{loco.number} не прицеплены вагоны"
+        end
       else
         puts "Неверный номер станции"
       end
@@ -146,14 +180,18 @@ class Dispatcher
       current_train_type = loco.type
 
       begin
-        print "Укажите номер вагона (тип #{current_train_type}): "
-        carriage_number = gets.to_i
+        print "Введите номер вагона (тип #{current_train_type}): "
+        carriage_number = gets.chomp
       
         new_carriage = nil
         if current_train_type == "Passenger"
-          new_carriage = PassengerCarriage.new(carriage_number)
+          print "Укажите количество мест в вагоне: "
+          seats = gets.to_i
+          new_carriage = PassengerCarriage.new(carriage_number, seats)
         elsif current_train_type == "Cargo"
-          new_carriage = CargoCarriage.new(carriage_number)
+          print "Укажите объем вагона: "
+          volume = gets.to_f
+          new_carriage = CargoCarriage.new(carriage_number, volume)
         end
         
         loco.hitch_carriage(new_carriage) if !new_carriage.nil?
@@ -162,7 +200,7 @@ class Dispatcher
         retry_again = gets.chomp
         retry if retry_again == 'y'
       rescue => e
-        puts "Неожиданная ошибка: #{e.to_s}"
+        puts "Неожиданная ошибка: #{e.to_s}\n#{e.backtrace.join('\n')}"
       end
 
     else
@@ -194,6 +232,33 @@ class Dispatcher
     else
       puts "Неверный номер поезда"
     end
+  end
+
+  def occupy_carriage
+    puts "Укажите поезд"
+    loco = get_train_by_number(Train.all)
+
+    if !loco.nil?
+      if loco.carriages.size > 0 
+
+        puts "Список вагонов в поезде #{loco.number}:"
+        current_carriage = get_carriage_by_number(loco.carriages)
+        if !current_carriage.nil?
+          if current_carriage.type == 'Passenger'
+            current_carriage.occupy_seat
+          elsif current_carriage.type == 'Cargo'
+            current_carriage.occupy_volume
+          end
+        else
+          puts "Ошибка поиска вагона"
+        end
+      else
+        puts "К поезду не прицеплены вагоны"
+      end
+    else
+      puts "Неверный номер поезда"
+    end
+
   end
 
   def run_train
@@ -231,6 +296,12 @@ class Dispatcher
     trains_list.each { |train_number, train| puts "#{train_number}" }
     print "Номер поезда: "; train_number = gets.chomp
     trains_list[train_number]
+  end
+
+  def get_carriage_by_number(carriages_list)
+    carriages_list.each_with_index { |carriage, carriage_num| puts "#{carriage_num+1}. #{carriage.number}" }
+    print "Номер вагона: "; carriage_number = gets.to_i
+    carriages_list[carriage_number-1] if (1..carriages_list.size).include?(carriage_number)
   end
 
 end

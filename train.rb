@@ -3,6 +3,7 @@ class Train
   TRAIN_NUMBER_FORMAT = /^[а-я\d]{3}-?[а-я\d]{2}$/
 
   attr_reader   :number
+  attr_reader   :type
   attr_accessor :speed
   attr_accessor :carriages
   attr_accessor :current_station_index
@@ -114,6 +115,14 @@ class Train
     validate!
   rescue
     false
+  end
+
+  def count_carriages
+    self.carriages.size
+  end
+
+  def check_carriages(&block)
+    self.carriages.each { |carriage| block.call(carriage) }
   end
 
   protected
