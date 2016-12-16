@@ -121,8 +121,8 @@ class Train
     self.carriages.size
   end
 
-  def check_carriages(&block)
-    self.carriages.each { |carriage| block.call(carriage) }
+  def each_carriage
+    self.carriages.each { |carriage| yield carriage } if block_given?
   end
 
   protected

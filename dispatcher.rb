@@ -133,11 +133,9 @@ class Dispatcher
     else
       print_stations_list(Station.all)
       print "Номер станции: "; station_number = gets.to_i
-      if station_number.size > 0
-        #Station.all[station_number-1].list_trains
+      if station_number.size > 0 && station_number > 0 && station_number <= Station.all.size
         # Номер поезда, тип, кол-во вагонов
-        block = lambda { |train | puts "Поезд № #{train.number}, тип #{train.type}, кол-во вагонов #{train.count_carriages}"}
-        Station.all[station_number-1].check_trains(&block)
+        Station.all[station_number-1].each_train { |train | puts "Поезд № #{train.number}, тип #{train.type}, кол-во вагонов #{train.count_carriages}"}
       else
         puts "Неверный номер станции"
       end
@@ -152,14 +150,14 @@ class Dispatcher
       loco = get_train_by_number(Train.all)
       if !loco.nil?
         if loco.carriages.size > 0
-          current_train_type = loco.type
           # Номер вагона, тип, кол-во свободно и занято
-          if current_train_type == "Passenger"
-            block = lambda { |carriage | puts "Вагон № #{carriage.number}, тип #{carriage.type}, мест занято #{carriage.count_occupied_seats}, мест свободно #{carriage.count_free_seats}" }
-          elsif current_train_type == "Cargo"
-            block = lambda { |carriage | puts "Вагон № #{carriage.number}, тип #{carriage.type}, занятый объем #{carriage.count_occupied_volume}, свободный объем #{carriage.count_free_volume}" }
+          loco.each_carriage do |carriage|
+            if carriage.type == "Passenger"
+              puts "Вагон № #{carriage.number}, тип #{carriage.type}, мест занято #{carriage.count_occupied_seats}, мест свободно #{carriage.count_free_seats}"
+            elsif carriage.type == "Cargo"
+              puts "Вагон № #{carriage.number}, тип #{carriage.type}, занятый объем #{carriage.count_occupied_volume}, свободный объем #{carriage.count_free_volume}"
+            end
           end
-          loco.check_carriages(&block)
         else
           puts "К поезду #{loco.number} не прицеплены вагоны"
         end

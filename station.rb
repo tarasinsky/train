@@ -58,9 +58,8 @@ class Station
     false
   end
 
-  def check_trains(&block)
-    #self.trains.each { |train_number, train| block.call(train_number, train.type, train.count_carriages) }
-    self.trains.each { |train_number, train| block.call(train) }
+  def each_train
+    self.trains.each_value { |train| yield train } if block_given?
   end
 
   private
