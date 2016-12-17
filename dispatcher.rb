@@ -44,7 +44,7 @@ class Dispatcher
       retry_again = gets.chomp
       retry if retry_again == 'y'
     rescue => e
-      puts "Неожиданная ошибка: #{e.to_s}"
+      puts "Неожиданная ошибка: #{e}\n#{e.backtrace.join('\n')}"
     end
   end
 
@@ -72,8 +72,8 @@ class Dispatcher
         print "Ошибка создания поезда '#{e.message}'. Повторить (y-да/любой другой символ - нет)?"
         retry_again = gets.chomp
         retry if retry_again == 'y'
-      rescue => e
-        puts "Неожиданная ошибка: #{e}"
+      #rescue => e
+      #  puts "Неожиданная ошибка: #{e}\n#{e.backtrace.join('\n')}"
       end
     end
   end
@@ -229,7 +229,7 @@ class Dispatcher
         if current_carriage.type == 'Passenger'
           current_carriage.occupy_seat
         elsif current_carriage.type == 'Cargo'
-          current_carriage.occupy_volume
+          current_carriage.occupy_volume 1
         end
       else
         puts 'Ошибка поиска вагона'

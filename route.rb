@@ -1,15 +1,9 @@
 class Route
   attr_reader :list
 
-  def initialize(start_station, finish_station=nil)
+  def initialize(start_station, finish_station = nil)
     @list = []
-    if !(start_station.instance_of? Station)
-      puts "Wrong type for 1 argument. Created empty route"
-    elsif !(start_station.instance_of? Station)
-      puts "Wrong type for 2 argument. Created empty route"
-    else
-      @list << start_station << finish_station
-    end
+    @list << start_station << finish_station if validate(start_station, finish_station)
   end
 
   def add_station(station, order = -1)
@@ -32,12 +26,11 @@ class Route
       
       to_delete_station = true
       station.trains.each do |train|
-
         if train.route.include?(station)
-          puts "Couldn't delete station"; to_delete_station = !to_delete_station if to_delete_station
+          puts 'Could not delete station'
+          to_delete_station = !to_delete_station if to_delete_station
           puts "'#{station.name}' is in route for the train '#{train.number}'"
         end
-
       end
 
       self.list.delete(station) if to_delete_station
@@ -48,11 +41,18 @@ class Route
 
   def print_stations
     if self.list.size > 0
-      puts "Route list:"
-      self.list.each {|station| puts "#{station.name}"}
+      puts 'Route list:'
+      self.list.each { |station| puts "#{station.name}" }
     else
-      puts "Empty route"
+      puts 'Empty route'
     end
   end
 
+  def validate(start_station, finish_station)
+    if !(start_station.instance_of? Station)
+      puts 'Wrong type for 1 argument. Created empty route'
+    elsif !(start_station.instance_of? Station)
+      puts 'Wrong type for 2 argument. Created empty route'
+    end
+  end
 end

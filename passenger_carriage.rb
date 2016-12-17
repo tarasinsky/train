@@ -17,7 +17,7 @@ class PassengerCarriage < Carriage
       taken_seat = true
     else
       vacant_number = self.seats.key(true)
-      if !vacant_number.nil?
+      unless vacant_number.nil?
         self.seats[vacant_number] = false 
         taken_seat = true
       end
@@ -44,8 +44,8 @@ class PassengerCarriage < Carriage
   protected
 
   def validate(capacity)
-    raise "Неверный тип для количества мест в вагоне" if !(capacity.instance_of? Fixnum)
-    raise "Неверно указано количество мест в вагоне" if capacity < 1
+    raise 'Неверный тип для количества мест в вагоне' unless capacity.instance_of? Fixnum
+    raise 'Неверно указано количество мест в вагоне' if capacity < 1
     true
   end
 

@@ -1,23 +1,24 @@
 class Carriage
-  attr_reader :number
-  attr_reader :type
-
   include InstanceCounter
   include Manufacturer
 
+  class << self; attr_accessor :carriages_list; end
+
+  attr_reader :number, :type
+
   CARRIAGE_NUMBER_FORMAT = /^[\d]{1}/
 
-  @@carriages_list = []
+  @carriages_list = []
 
   def initialize(number, type)
     @number = number
     @type   = type
 
-    @@carriages_list << self if validate!
+    Carriage.carriages_list << self if validate!
   end
 
   def self.all
-    @@carriages_list
+    Carriage.carriages_list
   end
 
   def valid?
@@ -27,14 +28,13 @@ class Carriage
   end
 
   protected
-  attr_writer :number
-  attr_writer :type
+
+  attr_writer :number, :type
 
   def validate!
-    raise "Не указан номер вагона" if self.number.nil?
-    raise "Длина номера вагона должна быть не менее 1 символа" if self.number.size < 1
-    raise "Неверный формат номера вагона #{CARRIAGE_NUMBER_FORMAT}" if self.number !~ CARRIAGE_NUMBER_FORMAT
+    raise 'Не указан номер вагона' if number.nil?
+    raise 'Длина номера вагона должна быть не менее 1 символа' if number.size < 1
+    raise "Неверный формат номера вагона #{CARRIAGE_NUMBER_FORMAT}" if number !~ CARRIAGE_NUMBER_FORMAT
     true
   end
-
 end
