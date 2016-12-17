@@ -8,5 +8,4 @@ class PassengerTrain < Train
   def type
     TRAIN_TYPE
   end
-
 end
