@@ -24,27 +24,27 @@ class Train
   end
 
   def move(set_speed)
-    self.speed = set_speed if set_speed > 0
+    speed = set_speed if set_speed > 0
   end
 
   def break
-    self.speed = 0
+    speed = 0
   end
 
   def hitch_carriage(carriage)
-    self.carriages << carriage if carriage_ready?(carriage)
+    carriages << carriage if carriage_ready?(carriage)
   end
 
   def unhitch_carriage(carriage)
-    self.carriages.delete(carriage) if carriage_ready?(carriage)
+    carriages.delete(carriage) if carriage_ready?(carriage)
   end
 
   def assign_route(new_route)
-    self.route = new_route
+    route = new_route
   end
 
   def set_initial_station
-    self.current_station_index = 0
+    current_station_index = 0
   end
 
   def current_station
@@ -54,44 +54,41 @@ class Train
   end
 
   def next_station
-    if exist_train_route?
-      if current_station_index >= (route.list.size - 1)
-        announce_text = "Already at the final station for the train '#{number}'"
-      else
-        next_station_name = route.list[current_station_index + 1].name
-        announce_text = "Next station for the train is '#{number}' is '#{next_station_name}'"
-      end
-      puts announce_text
+    return unless exist_train_route?
+    if current_station_index >= (route.list.size - 1)
+      announce_text = "Already at the final station for the train '#{number}'"
+    else
+      next_station_name = route.list[current_station_index + 1].name
+      announce_text = "Next station for the train is '#{number}' is '#{next_station_name}'"
     end
+    puts announce_text
   end
 
   def prev_station
-    if exist_train_route?
-      if current_station_index.zero?
-        announce_text = "Already at the start station for the train '#{number}'"
-      else
-        prev_station_name = route.list[current_station_index - 1].name
-        announce_text = "Previous station for the train is '#{number}' is '#{prev_station_name}'"
-      end
-      puts announce_text
+    return unless exist_train_route?
+    if current_station_index.zero?
+      announce_text = "Already at the start station for the train '#{number}'"
+    else
+      prev_station_name = route.list[current_station_index - 1].name
+      announce_text = "Previous station for the train is '#{number}' is '#{prev_station_name}'"
     end
+    puts announce_text
   end
 
   # forward: true - ahead, false - reverse
   def move_by_route(forward = true)
-    if exist_train_route?
-      depart_from_station
+    return unless exist_train_route?
+    depart_from_station
 
-      train_start_speed_kmh   = 5
-      train_regular_speed_kmh = 60
+    train_start_speed_kmh   = 5
+    train_regular_speed_kmh = 60
 
-      move train_start_speed_kmh
-      move train_regular_speed_kmh
-      move train_start_speed_kmh
+    move train_start_speed_kmh
+    move train_regular_speed_kmh
+    move train_start_speed_kmh
 
-      arrive_to_station forward
-      brake
-    end
+    arrive_to_station forward
+    brake
   end
 
   def self.all
@@ -103,11 +100,11 @@ class Train
   end
 
   def count_carriages
-    self.carriages.size
+    carriages.size
   end
 
   def each_carriage
-    self.carriages.each { |carriage| yield carriage } if block_given?
+    carriages.each { |carriage| yield carriage } if block_given?
   end
 
   def valid?
