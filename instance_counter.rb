@@ -8,9 +8,7 @@ module InstanceCounter
     protected
     def register_instance
       class_ref = self.class
-      if !class_ref.class_variable_defined?(:@@instance_counter)
-        class_ref.class_variable_set(:@@instance_counter, 0)
-      end
+      class_ref.class_variable_set(:@@instance_counter, 0) unless class_ref.class_variable_defined?(:@@instance_counter)
       class_ref.class_variable_set(:@@instance_counter, class_ref.class_variable_get(:@@instance_counter) + 1)
     end
   end
@@ -20,5 +18,4 @@ module InstanceCounter
       self.class_variable_get(:@@instance_counter)
     end
   end
-
 end

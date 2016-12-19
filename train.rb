@@ -1,6 +1,7 @@
 class Train
   include Manufacturer
   include InstanceCounter
+  include Accessor
 
   class << self; attr_accessor :trains_list; end
 
