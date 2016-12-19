@@ -54,6 +54,26 @@ class Dispatcher
   end
 
   def create_train
+    train_type = get_train_type
+    return if train_type.zero?
+
+    begin
+      train_number = input_train_number
+      if train_type == 1 
+        PassengerTrain.new(train_number)
+      elsif train_type == 2
+        CargoTrain.new(train_number)
+      end
+    rescue RuntimeError => e
+      print "Ошибка создания поезда '#{e.message}'. Повторить (y-да/любой другой символ - нет)?"
+      retry_again = gets.chomp
+      retry if retry_again == 'y'
+    rescue => e
+      puts "Неожиданная ошибка: #{e}\n#{e.backtrace.join('\n')}"
+    end
+  end
+
+  def get_train_type
     24.times { print '-' }; puts '-'
     puts 'Выберите тип поезда'
     puts '1. Пассажирский'
@@ -62,25 +82,12 @@ class Dispatcher
     print 'Тип поезда: '
     train_type = gets.to_i
 
-    if (1..2).include?(train_type)
-      begin
-        train_number = input_train_number
-        if train_type == 1 
-          PassengerTrain.new(train_number)
-        elsif train_type == 2
-          CargoTrain.new(train_number)
-        end
-      rescue RuntimeError => e
-        print "Ошибка создания поезда '#{e.message}'. Повторить (y-да/любой другой символ - нет)?"
-        retry_again = gets.chomp
-        retry if retry_again == 'y'
-      rescue => e
-        puts "Неожиданная ошибка: #{e}\n#{e.backtrace.join('\n')}"
-      end
-    else
+    unless (1..2).include?(train_type)
       puts 'Не указан тип поезда'
       system 'clear'
+      train_type = 0
     end
+    train_type
   end
 
   def arrive_train_to_station
