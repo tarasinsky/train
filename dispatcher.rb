@@ -1,16 +1,7 @@
 class Dispatcher
   def act
-    menu_items = {
-       '1' => ['Создать станцию'                      , 'create_station'              ],
-       '2' => ['Создать поезд'                        , 'create_train'                ],
-       '3' => ['Прицепить вагон к поезду'             , 'hitch_carriage_to_train'     ],
-       '4' => ['Отцепить вагон от поезда'             , 'unhitch_carriage_from_train' ],
-       '5' => ['Поместить поезд на станцию'           , 'arrive_train_to_station'     ],
-       '6' => ['Просмотреть список станций и поездов' , 'show_stations_and_trains'    ],
-       '7' => ['Просмотреть список поездов и вагонов' , 'show_trains_and_carriages'   ],
-       '8' => ['Заполнить вагон'                      , 'occupy_carriage'             ],
-       '0' => ['Выход'                                , ""                            ]
-    }
+    menu_items = create_main_menu
+
     loop do
       input = menu(menu_items)
 
@@ -24,6 +15,20 @@ class Dispatcher
   end
 
   private
+
+  def create_main_menu
+    return {
+       '1' => ['Создать станцию'                      , 'create_station'              ],
+       '2' => ['Создать поезд'                        , 'create_train'                ],
+       '3' => ['Прицепить вагон к поезду'             , 'hitch_carriage_to_train'     ],
+       '4' => ['Отцепить вагон от поезда'             , 'unhitch_carriage_from_train' ],
+       '5' => ['Поместить поезд на станцию'           , 'arrive_train_to_station'     ],
+       '6' => ['Просмотреть список станций и поездов' , 'show_stations_and_trains'    ],
+       '7' => ['Просмотреть список поездов и вагонов' , 'show_trains_and_carriages'   ],
+       '8' => ['Заполнить вагон'                      , 'occupy_carriage'             ],
+       '0' => ['Выход'                                , ""                            ]
+    }
+  end
 
   def menu(menu_items)
     49.times { print '=' }; puts '='
@@ -57,10 +62,7 @@ class Dispatcher
     print 'Тип поезда: '
     train_type = gets.to_i
 
-    unless (1..2).include?(train_type)
-      puts 'Не указан тип поезда'
-      system 'clear'
-    else
+    if (1..2).include?(train_type)
       begin
         train_number = input_train_number
         if train_type == 1 
@@ -72,32 +74,35 @@ class Dispatcher
         print "Ошибка создания поезда '#{e.message}'. Повторить (y-да/любой другой символ - нет)?"
         retry_again = gets.chomp
         retry if retry_again == 'y'
-      #rescue => e
-      #  puts "Неожиданная ошибка: #{e}\n#{e.backtrace.join('\n')}"
+      rescue => e
+        puts "Неожиданная ошибка: #{e}\n#{e.backtrace.join('\n')}"
       end
+    else
+      puts 'Не указан тип поезда'
+      system 'clear'
     end
   end
 
   def arrive_train_to_station
-    if possible_to_arrive?
-      puts 'Какой поезд нужно поместить на станцию?'
-      arriving_train = get_train_by_number(Train.all)
+    return if !possible_to_arrive?
 
-      unless arriving_train.nil?
-        print_stations_list(Station.all)
-        print 'Номер поезда: '
-        desired_station = gets.to_i
-        if desired_station > 0 || desired_station <= Station.all.size
-          if arriving_train.route.nil?
-            new_route = Route.new(Station.all[desired_station - 1])
-            arriving_train.assign_route new_route
-            arriving_train.set_initial_station
-          end
-          Station.all[desired_station - 1].arrive(arriving_train)
+    puts 'Какой поезд нужно поместить на станцию?'
+    arriving_train = get_train_by_number(Train.all)
+
+    if !arriving_train.nil?
+      print_stations_list(Station.all)
+      print 'Номер поезда: '
+      desired_station = gets.to_i
+      if desired_station > 0 || desired_station <= Station.all.size
+        if arriving_train.route.nil?
+          new_route = Route.new(Station.all[desired_station - 1])
+          arriving_train.assign_route new_route
+          arriving_train.set_initial_station
         end
-      else
-        puts 'Нет такого поезда'
+        Station.all[desired_station - 1].arrive(arriving_train)
       end
+    else
+      puts 'Нет такого поезда'
     end
   end
 
@@ -222,18 +227,18 @@ class Dispatcher
     puts 'Укажите поезд'
     loco = get_train_by_number(Train.all)
 
-    if possible_to_occupy?(loco)
-      puts "Список вагонов в поезде #{loco.number}:"
-      current_carriage = get_carriage_by_number(loco.carriages)
-      unless current_carriage.nil?
-        if current_carriage.type == 'Passenger'
-          current_carriage.occupy_seat
-        elsif current_carriage.type == 'Cargo'
-          current_carriage.occupy_volume 1
-        end
-      else
-        puts 'Ошибка поиска вагона'
+    return unless possible_to_occupy?(loco)
+
+    puts "Список вагонов в поезде #{loco.number}:"
+    current_carriage = get_carriage_by_number(loco.carriages)
+    unless current_carriage.nil?
+      if current_carriage.type == 'Passenger'
+        current_carriage.occupy_seat
+      elsif current_carriage.type == 'Cargo'
+        current_carriage.occupy_volume 1
       end
+    else
+      puts 'Ошибка поиска вагона'
     end
   end
 
