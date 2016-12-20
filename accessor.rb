@@ -25,30 +25,27 @@ module Accessors
         define_method("#{method}_history") { instance_variable_get("@saved_history")[method] }
       end
     end
-  end
 
-  def strong_attr_accessor(attr_name, attr_class)
-    at = attr_name.to_sym
-    define_method(at) { instance_variable_get("@#{at}") }
-    
-    define_method("#{attr_name}=") do |value|
-      prev_value = instance_variable_get("@#{method}")
-
-      instance_variable_set("@#{method}", value)
-
-      instance_variable_set("@saved_history", {}) unless instance_variable_defined?("@saved_history")
-      saved_history = instance_variable_get("@saved_history")
-      saved_history[method] = [] unless saved_history[method].is_a?(Array)
-      saved_history[method] << prev_value
-      instance_variable_set("@saved_history", saved_history)
+    def strong_attr_accessor(attr_name, attr_class)
+      attr_sym = attr_name.to_sym
+      define_method(attr_sym) { instance_variable_get("@#{attr_sym}") }
+      
+      define_method("#{attr_name}=") do |value|
+        if value.is_a?(attr_class)
+          instance_variable_set("@#{attr_name}", value)
+        else
+          raise TypeError.new("Wrong class #{value.class} for #{value}, not #{attr_class}")
+        end
+      end
     end
-
   end
 end
 
 
 class Test
   include Accessors
+
+  strong_attr_accessor :at, String
 
   attr_accessor_with_history :hi, :ri
 
@@ -72,3 +69,7 @@ t.ri=13
 puts "hi_history=#{t.hi_history}"
 
 puts "ri_history=#{t.ri_history}"
+
+t.at = 'test'
+t.at = 1
+t.at = []
