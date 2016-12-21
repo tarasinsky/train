@@ -4,7 +4,7 @@ class Route
   def initialize(start_station, finish_station = nil)
     @list = []
     
-    @list << start_station << finish_station if validate(start_station, finish_station)
+    @list << start_station << finish_station if check_stations(start_station, finish_station)
   end
 
   def add_station(station, order = -1)
@@ -60,7 +60,7 @@ class Route
     end
   end
 
-  def validate(start_station, finish_station)
+  def check_stations(start_station, finish_station)
     if !(start_station.instance_of? Station)
       puts 'Wrong type for 1 argument. Created empty route'
     elsif !(finish_station.instance_of? Station)
