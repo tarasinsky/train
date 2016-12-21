@@ -1,7 +1,8 @@
 class Train
   include Manufacturer
   include InstanceCounter
-  include Accessor
+  include Accessors
+  include Validation
 
   class << self; attr_accessor :trains_list; end
 
@@ -145,12 +146,9 @@ class Train
   end
 
   def validate!
-    raise 'Неверный тип номера поезда'    unless number.instance_of? String
-    raise 'Неверный тип типа поезда'      unless type.instance_of? String
-
-    raise 'Не указан номер поезда'        if number.nil?
-    raise 'Длина номера поезда должна быть не менее 5 символов' if number.size < 5
-    raise "Неверный формат номера поезда #{TRAIN_NUMBER_FORMAT}" if number !~ TRAIN_NUMBER_FORMAT
+    raise 'Не указан номер поезда' unless validate(number, :presense)
+    raise 'Длина номера поезда должна быть не менее 5 символов'   unless validate(number.size , :less_than, compare_to: 5)
+    raise "Неверный формат номера поезда #{TRAIN_NUMBER_FORMAT}"  unless validate(number      , :format   , regex: TRAIN_NUMBER_FORMAT)
     true
   end
 end

@@ -1,10 +1,11 @@
 class PassengerCarriage < Carriage
-  attr_reader :seats
+  attr_reader :seats, :capacity
 
   CARRIAGE_TYPE = 'Passenger'.freeze
 
   def initialize(number, capacity)
-    return unless validate(capacity)
+    @capacity = capacity
+    return unless validate!
     super(number, CARRIAGE_TYPE)
     @seats = Hash[(1..capacity).map { |seat_number| [seat_number, true] }]
   end
@@ -42,10 +43,8 @@ class PassengerCarriage < Carriage
 
   protected
 
-  def validate(capacity)
-    wrong_type_for_capacity = 'Неверный тип для количества мест в вагоне'
-    raise wrong_type_for_capacity unless capacity.instance_of? Fixnum
-    raise 'Неверно указано количество мест в вагоне' if capacity < 1
+  def validate!
+    raise 'Неверно указано количество мест в вагоне' unless validate(capacity, :less_than, compare_to: 1)
     true
   end
 end

@@ -6,7 +6,7 @@ module Accessors
   module ClassMethods
     def attr_accessor_with_history(*methods)
       methods.each do |method|
-        raise TypeError.new("method name is not symbol") unless method.is_a?(Symbol)
+        saved_history_var = '@saved_history'
 
         define_method(method) { instance_variable_get("@#{method}") }
         
@@ -15,14 +15,14 @@ module Accessors
 
           instance_variable_set("@#{method}", value)
 
-          instance_variable_set("@saved_history", {}) unless instance_variable_defined?("@saved_history")
-          saved_history = instance_variable_get("@saved_history")
-          saved_history[method] = [] unless saved_history[method].is_a?(Array)
+          instance_variable_set(saved_history_var, {}) unless instance_variable_defined?(saved_history_var)
+          saved_history = instance_variable_get(saved_history_var)
+          saved_history[method] ||= []
           saved_history[method] << prev_value
-          instance_variable_set("@saved_history", saved_history)
+          instance_variable_set(saved_history_var, saved_history)
         end
 
-        define_method("#{method}_history") { instance_variable_get("@saved_history")[method] }
+        define_method("#{method}_history") { instance_variable_get(saved_history_var)[method] }
       end
     end
 
@@ -40,36 +40,3 @@ module Accessors
     end
   end
 end
-
-
-class Test
-  include Accessors
-
-  strong_attr_accessor :at, String
-
-  attr_accessor_with_history :hi, :ri
-
-  def initialize
-  end
-
-  def t
-    puts @@hi
-  end
-end
-
-t=Test.new
-t.hi=1
-t.hi=2
-t.hi=3
-
-t.ri=11
-t.ri=12
-t.ri=13
-
-puts "hi_history=#{t.hi_history}"
-
-puts "ri_history=#{t.ri_history}"
-
-t.at = 'test'
-t.at = 1
-t.at = []

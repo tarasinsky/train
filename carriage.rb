@@ -1,6 +1,7 @@
 class Carriage
   include InstanceCounter
   include Manufacturer
+  include Validation
 
   class << self; attr_accessor :carriages_list; end
 
@@ -32,9 +33,9 @@ class Carriage
   attr_writer :number, :type
 
   def validate!
-    raise 'Не указан номер вагона' if number.nil?
-    raise 'Длина номера вагона должна быть не менее 1 символа' if number.size < 1
-    raise "Неверный формат номера вагона #{CARRIAGE_NUMBER_FORMAT}" if number !~ CARRIAGE_NUMBER_FORMAT
+    raise 'Не указан номер вагона' unless validate(number, :presense)
+    raise 'Длина номера вагона должна быть не менее 1 символа'      unless validate(number.size , :less_than, compare_to: 1)
+    raise "Неверный формат номера вагона #{CARRIAGE_NUMBER_FORMAT}" unless validate(number      , :format   , regex: CARRIAGE_NUMBER_FORMAT)
     true
   end
 end

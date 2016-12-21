@@ -4,11 +4,10 @@ class CargoCarriage < Carriage
   CARRIAGE_TYPE = 'Cargo'
 
   def initialize(number, volume)
-    if validate(volume)
-      super(number, CARRIAGE_TYPE)
-      @volume = volume
-      @occupied_volume = 0.0
-    end
+    @volume = volume
+    return unless validate!
+    super(number, CARRIAGE_TYPE)
+    @occupied_volume = 0.0
   end
 
   def occupy_volume(reserved_volume)
@@ -34,9 +33,8 @@ class CargoCarriage < Carriage
 
   attr_writer :occupied_volume
 
-  def validate(volume)
-    raise 'Неверно указан объем' unless ((volume.instance_of? Float) || (volume.instance_of? Fixnum))
-    raise 'Неверно указан объем' unless volume > 0
+  def validate!
+    raise 'Неверно указан объем в м3' unless validate(volume, :less_than, compare_to: 10)
     true
   end
 end

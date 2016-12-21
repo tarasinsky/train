@@ -1,9 +1,10 @@
 class Station
+  include InstanceCounter
+  include Validation
+
   attr_accessor :name
   attr_reader :trains
  
-  include InstanceCounter
-
   @@stations_list = []
 
   NAME_FORMAT = /^[а-я]{1}/i
@@ -93,9 +94,9 @@ class Station
   end
 
   def validate!
-    raise "Не указано название станции" if self.name.nil?
-    raise "Длина названия станции должна быть не менее 1 символа" if self.name.size < 1
-    raise "Неверный формат названия станции #{NAME_FORMAT}" if self.name !~ NAME_FORMAT
+    raise "Не указано название станции" unless validate(name, :presense)
+    raise "Длина названия станции должна быть не менее 1 символа" unless validate(name.size , :less_than, compare_to: 1)
+    raise "Неверный формат названия станции #{NAME_FORMAT}"       unless validate(name      , :format   , regex: NAME_FORMAT)
     true
   end
 end
