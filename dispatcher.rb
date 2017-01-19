@@ -3,7 +3,7 @@ class Dispatcher
     menu_items = create_main_menu
 
     loop do
-      input = menu(menu_items)
+      input = show_menu(menu_items)
 
       system 'clear'
 
@@ -18,19 +18,19 @@ class Dispatcher
 
   def create_main_menu
     return {
-       '1' => ['Создать станцию'                      , 'create_station'              ],
-       '2' => ['Создать поезд'                        , 'create_train'                ],
-       '3' => ['Прицепить вагон к поезду'             , 'hitch_carriage_to_train'     ],
-       '4' => ['Отцепить вагон от поезда'             , 'unhitch_carriage_from_train' ],
-       '5' => ['Поместить поезд на станцию'           , 'arrive_train_to_station'     ],
-       '6' => ['Просмотреть список станций и поездов' , 'show_stations_and_trains'    ],
-       '7' => ['Просмотреть список поездов и вагонов' , 'show_trains_and_carriages'   ],
-       '8' => ['Заполнить вагон'                      , 'occupy_carriage'             ],
-       '0' => ['Выход'                                , ""                            ]
+      '1' => ['Создать станцию'                      , 'create_station'              ],
+      '2' => ['Создать поезд'                        , 'create_train'                ],
+      '3' => ['Прицепить вагон к поезду'             , 'hitch_carriage_to_train'     ],
+      '4' => ['Отцепить вагон от поезда'             , 'unhitch_carriage_from_train' ],
+      '5' => ['Поместить поезд на станцию'           , 'arrive_train_to_station'     ],
+      '6' => ['Просмотреть список станций и поездов' , 'show_stations_and_trains'    ],
+      '7' => ['Просмотреть список поездов и вагонов' , 'show_trains_and_carriages'   ],
+      '8' => ['Заполнить вагон'                      , 'occupy_carriage'             ],
+      '0' => ['Выход'                                , ""                            ]
     }
   end
 
-  def menu(menu_items)
+  def show_menu(menu_items)
     49.times { print '=' }; puts '='
     menu_items.each do |menu_item, menu_action|
       puts "#{menu_item}. #{menu_action[0]}"
@@ -91,105 +91,117 @@ class Dispatcher
   end
 
   def arrive_train_to_station
-    return if !possible_to_arrive?
+    return if possible_to_arrive?
 
     puts 'Какой поезд нужно поместить на станцию?'
     arriving_train = get_train_by_number(Train.all)
 
-    if !arriving_train.nil?
-      print_stations_list(Station.all)
-      print 'Номер поезда: '
-      desired_station = gets.to_i
-      if desired_station > 0 || desired_station <= Station.all.size
-        if arriving_train.route.nil?
-          new_route = Route.new(Station.all[desired_station - 1])
-          arriving_train.assign_route new_route
-          arriving_train.set_initial_station
-        end
-        Station.all[desired_station - 1].arrive(arriving_train)
-      end
-    else
+    if arriving_train.nil?
       puts 'Нет такого поезда'
+      return
     end
+      
+    print_stations_list(Station.all)
+    print 'Номер поезда: '
+    desired_station = gets.to_i
+
+    return desired_station < 1 || desired_station > Station.all.size
+    
+    if arriving_train.route.nil?
+      new_route = Route.new(Station.all[desired_station - 1])
+      arriving_train.assign_route new_route
+      arriving_train.set_initial_station
+    end
+    Station.all[desired_station - 1].arrive(arriving_train)
+
   end
 
   def possible_to_arrive?
     if Train.all.size.zero?
       puts 'Список поездов пуст'
-      possible_ro_arrive = false
+      possible_to_arrive = false
     elsif Station.all.size.zero?
       puts 'Список станций пуст'
-      possible_ro_arrive = false
+      possible_to_arrive = false
     else
-      possible_ro_arrive = true
+      possible_to_arrive = true
     end
-    possible_ro_arrive
+    possible_to_arrive
   end
 
   def show_stations_and_trains
     if Station.all.size.zero?
       puts 'Список станций пуст'
-    else
-      print_stations_list(Station.all)
-      print 'Номер станции: '
-      station_number = gets.to_i
-      if station_number.size > 0 && station_number > 0 && station_number <= Station.all.size
-        Station.all[station_number-1].each_train do |train | 
-          puts "Поезд № #{train.number}, тип #{train.type}, кол-во вагонов #{train.count_carriages}"
-        end
-      else
-        puts 'Неверный номер станции'
-      end
+      return
     end
+    
+    print_stations_list(Station.all)
+    print 'Номер станции: '
+    station_number = gets.to_i
+    if station_number.size > 0 && station_number > 0 && station_number <= Station.all.size
+      Station.all[station_number-1].each_train do |train | 
+        puts "Поезд № #{train.number}, тип #{train.type}, кол-во вагонов #{train.count_carriages}"
+      end
+    else
+      puts 'Неверный номер станции'
+    end
+
   end
 
   def show_trains_and_carriages
     if Train.all.size.zero?
       puts 'Список поездов пуст'
-    else
-      puts 'Выберите интересуемый поезд'
-      loco = get_train_by_number(Train.all)
-      unless loco.nil?
-        unless loco.carriages.size.zero?
-          loco.each_carriage do |carriage|
-            if carriage.type == "Passenger"
-              carriage_details = ", мест занято #{carriage.count_occupied_seats}, мест свободно #{carriage.count_free_seats}"
-            elsif carriage.type == "Cargo"
-              carriage_details = ", занятый объем #{carriage.count_occupied_volume}, свободный объем #{carriage.count_free_volume}"
-            end
-            puts "Вагон № #{carriage.number}, тип #{carriage.type}#{carriage_details}"
-          end
-        else
-          puts "К поезду #{loco.number} не прицеплены вагоны"
-        end
-      else
-        puts 'Неверный номер станции'
-      end
+      return
     end
+    
+    puts 'Выберите интересуемый поезд'
+    loco = get_train_by_number(Train.all)
+    
+    if loco.nil?
+      puts 'Неверный номер поезда'
+      return
+    end
+
+    if loco.carriages.size.zero?
+      puts "К поезду #{loco.number} не прицеплены вагоны"
+      return
+    end
+
+    loco.each_carriage do |carriage|
+      if carriage.type == "Passenger"
+        carriage_details = ", мест занято #{carriage.count_occupied_seats}, мест свободно #{carriage.count_free_seats}"
+      elsif carriage.type == "Cargo"
+        carriage_details = ", занятый объем #{carriage.count_occupied_volume}, свободный объем #{carriage.count_free_volume}"
+      end
+      puts "Вагон № #{carriage.number}, тип #{carriage.type}#{carriage_details}"
+    end
+
   end
 
   def hitch_carriage_to_train
     puts 'К какому поезду прицепить вагон?'
     loco = get_train_by_number(Train.all)
 
-    unless loco.nil?
-      current_train_type = loco.type
-      begin
-        new_carriage = create_train_by_type(current_train_type)
-        loco.hitch_carriage(new_carriage) unless new_carriage.nil?
-      rescue RuntimeError => e
-        print "Ошибка создания вагона '#{e.message}'. Повторить (y-да/любой другой символ - нет)?"
-        retry_again = gets.chomp
-        retry if retry_again == 'y'
-      rescue => e
-        puts "Неожиданная ошибка: #{e}\n#{e.backtrace.join('\n')}"
-      end
-    else
+    if loco.nil?
       puts 'Неверный номер поезда'
+      return
     end
+
+    current_train_type = loco.type
+    begin
+      new_carriage = create_carriage_by_train_type(current_train_type)
+      loco.hitch_carriage(new_carriage) unless new_carriage.nil?
+    rescue RuntimeError => e
+      print "Ошибка создания вагона '#{e.message}'. Повторить (y-да/любой другой символ - нет)?"
+      retry_again = gets.chomp
+      retry if retry_again == 'y'
+    rescue => e
+      puts "Неожиданная ошибка: #{e}\n#{e.backtrace.join('\n')}"
+    end
+
   end
 
-  def create_train_by_type(current_train_type)
+  def create_carriage_by_train_type(current_train_type)
     print "Введите номер вагона (тип #{current_train_type}): "
     carriage_number = gets.chomp
     if current_train_type == 'Passenger'
@@ -210,24 +222,32 @@ class Dispatcher
     puts 'От какого поезда отцепить вагон?'
     loco = get_train_by_number(Train.all)
 
-    unless loco.nil?
-      if loco.carriages.size.zero?
-        puts 'Укажите номер вагона'
-        loco.carriages.each { |carriage| puts carriage.number.to_s }
+    return unless possible_to_unhitch?(loco)
 
-        print 'Номер вагона: '
-        carriage_number = gets.to_i
+    puts 'Укажите номер вагона'
+    loco.carriages.each { |carriage| puts carriage.number.to_s }
 
-        loco.carriages.each do |carriage|
-          loco.hitch_carriage(carriage) if carriage.number == carriage_number
-          break
-        end
-      else
-        puts 'К поезду не прицеплены вагоны'
-      end
-    else
-      puts 'Неверный номер поезда'
+    print 'Номер вагона: '
+    carriage_number = gets.to_i
+
+    loco.carriages.each do |carriage|
+      loco.unhitch_carriage(carriage) if carriage.number == carriage_number
+      break
     end
+
+  end
+
+  def possible_to_unhitch?(loco)
+    if loco.nil?
+      puts 'Неверный номер поезда'
+      possible_to_unhitch = false
+    elsif loco.carriages.size.zero?
+      puts 'К поезду не прицеплены вагоны'
+      possible_to_unhitch = false
+    else
+      possible_to_unhitch = true
+    end
+    possible_to_unhitch
   end
 
   def occupy_carriage
@@ -238,27 +258,24 @@ class Dispatcher
 
     puts "Список вагонов в поезде #{loco.number}:"
     current_carriage = get_carriage_by_number(loco.carriages)
-    unless current_carriage.nil?
-      if current_carriage.type == 'Passenger'
-        current_carriage.occupy_seat
-      elsif current_carriage.type == 'Cargo'
-        current_carriage.occupy_volume 1
-      end
-    else
+
+    if current_carriage.nil?
       puts 'Ошибка поиска вагона'
+    elsif current_carriage.type == 'Passenger'
+      current_carriage.occupy_seat
+    elsif current_carriage.type == 'Cargo'
+      current_carriage.occupy_volume 1
     end
   end
 
   def possible_to_occupy?(loco)
     possible_to_occupy = true
-    unless loco.nil?
-      if loco.carriages.size.zero?
-        possible_to_occupy = false
-        puts 'К поезду не прицеплены вагоны'
-      end
-    else
+    if loco.nil?
       possible_to_occupy = false
       puts 'Неверный номер поезда' 
+    elsif loco.carriages.size.zero?
+      possible_to_occupy = false
+      puts 'К поезду не прицеплены вагоны'
     end
     possible_to_occupy
   end
